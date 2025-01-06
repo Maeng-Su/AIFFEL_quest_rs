@@ -1,5 +1,5 @@
 # AIFFEL_quest_rs
-- 레포지토리에 대한 간략한 소개를 작성합니다.   
+- 맹성찬이 AIFFEL에서 수행하는 퀘스트를 위한 레파지토리입니다.
 - 레포지토리 구조도를 작성합니다.   
   - 레포지토리의 구조는 배포된 과정별 시간표를 참고합니다.
     - MainQuest폴더는 공통, 나머지는 C퀘스트가 있는 파트를 기준으로 폴더를 구성합니다.
@@ -10,26 +10,41 @@
 ```
 # 디렉토리 구조는 본 코드블럭을 참고하여 작성합니다.
 # README파일에 작성할 땐 bash코드펜스에 넣어야 구조를 볼 수 있습니다 :)
-AIFFEL_quest_cr
+AIFFEL_quest_rs
 ├── MainQuest
-│   ├── Quest01
+│   ├── Main_QUEST_01
 │   │   ├── .ipynb
 │   │   └── README.md
 .		.
 .		.
 .		.
-│   └── Quest08
+│   └── Main_QUEST_05
 │       ├── .ipynb
 │       └── README.md
 .
 .
 .
-└── Exploration
-    ├── Ex01
+├── Exploration
+│   ├── EXPLORATION_01
+│   │   ├── .ipynb
+│   │   └── README.md
+│   .
+│   .
+│   .
+│   └── EXPLORATION_07
+│       ├── .ipynb
+│       └── README.md
+.
+.
+.
+└── GoingDeeper
+    ├── GOINGDEEPER_01
+    │   ├── .ipynb
+    │   └── README.md
     .
     .
     .
-    └── Ex07
+    └── GOINGDEEPER_09
         ├── .ipynb
         └── README.md
 ```
