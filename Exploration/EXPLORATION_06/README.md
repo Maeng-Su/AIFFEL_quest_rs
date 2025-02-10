@@ -1,12 +1,12 @@
 # AIFFEL Campus Online Code Peer Review Templete
 - 코더 : 맹성찬
-- 리뷰어 : 김인수수
+- 리뷰어 : 김인수
 
 
 # PRT(Peer Review Template)
 - [X]  **1. 주어진 문제를 해결하는 완성된 코드가 제출되었나요?**  
-    ![1](images/1.png)  
-    ![2](images/2.png)  
+    ![1](1.png)  
+    ![2](2.png)  
     추상적(abstractive) 요약과 추출적(extractive) 요약을 모두 잘 진행하였습니다.
     
 - [X]  **2. 전체 코드에서 가장 핵심적이거나 가장 복잡하고 이해하기 어려운 부분에 작성된 
