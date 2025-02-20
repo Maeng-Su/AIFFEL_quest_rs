@@ -1,0 +1,67 @@
+{
+    "os": "Linux-6.1.112+-x86_64-with-glibc2.31",
+    "python": "3.9.7",
+    "heartbeatAt": "2025-02-18T06:37:31.339080",
+    "startedAt": "2025-02-18T06:37:30.888865",
+    "docker": null,
+    "cuda": null,
+    "args": [],
+    "state": "running",
+    "program": "aiffel/AIFFEL_quest_rs/DLthon/baseline_code.ipynb",
+    "codePathLocal": null,
+    "root": "/aiffel/aiffel/AIFFEL_quest_rs",
+    "git": {
+        "remote": "https://github.com/Maeng-Su/AIFFEL_quest_rs.git",
+        "commit": "4dc5c2f5925a7b80726721a23a64107aa2239e3e"
+    },
+    "email": null,
+    "host": "w2fbk4cvn1r2si1od17kgnbzx-5998b9fd89-mmt7c",
+    "username": "root",
+    "executable": "/opt/conda/bin/python",
+    "cpu_count": 2,
+    "cpu_count_logical": 4,
+    "cpu_freq": {
+        "current": 2199.998,
+        "min": 0.0,
+        "max": 0.0
+    },
+    "cpu_freq_per_core": [
+        {
+            "current": 2199.998,
+            "min": 0.0,
+            "max": 0.0
+        },
+        {
+            "current": 2199.998,
+            "min": 0.0,
+            "max": 0.0
+        },
+        {
+            "current": 2199.998,
+            "min": 0.0,
+            "max": 0.0
+        },
+        {
+            "current": 2199.998,
+            "min": 0.0,
+            "max": 0.0
+        }
+    ],
+    "disk": {
+        "/": {
+            "total": 121.81595230102539,
+            "used": 43.87448501586914
+        }
+    },
+    "gpu": "Tesla T4",
+    "gpu_count": 1,
+    "gpu_devices": [
+        {
+            "name": "Tesla T4",
+            "memory_total": 16106127360
+        }
+    ],
+    "memory": {
+        "total": 17.571754455566406
+    }
+}
