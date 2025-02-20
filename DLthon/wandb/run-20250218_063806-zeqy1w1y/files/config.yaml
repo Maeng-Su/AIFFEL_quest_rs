@@ -1,0 +1,76 @@
+wandb_version: 1
+
+epoch:
+  desc: null
+  value: 8
+learning_rate:
+  desc: null
+  value: 0.0747682768513761
+vocab:
+  desc: null
+  value: 1000
+embeddings:
+  desc: null
+  value: 64
+units_1:
+  desc: null
+  value: 256
+units_2:
+  desc: null
+  value: 256
+units_3:
+  desc: null
+  value: 1024
+class_num:
+  desc: null
+  value: 4
+optimizer:
+  desc: null
+  value: adam
+loss:
+  desc: null
+  value: sparse_categorical_crossentropy
+metrics:
+  desc: null
+  value:
+  - accuracy
+batch_size:
+  desc: null
+  value: 32
+_wandb:
+  desc: null
+  value:
+    python_version: 3.9.7
+    cli_version: 0.16.0
+    framework: keras
+    is_jupyter_run: true
+    is_kaggle_kernel: false
+    start_time: 1739860686.564767
+    t:
+      1:
+      - 2
+      - 3
+      - 5
+      - 53
+      - 55
+      2:
+      - 2
+      - 3
+      - 5
+      - 53
+      - 55
+      3:
+      - 2
+      - 3
+      - 8
+      - 16
+      - 23
+      - 37
+      4: 3.9.7
+      5: 0.16.0
+      8:
+      - 1
+      - 5
+      10:
+      - 9
+      13: linux-x86_64
