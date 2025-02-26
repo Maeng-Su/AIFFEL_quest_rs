@@ -6,7 +6,6 @@
 *.zip
 *.dat
 *.jpg
-*.png
 *.jpeg
 
 # 특정 디렉토리 제외
