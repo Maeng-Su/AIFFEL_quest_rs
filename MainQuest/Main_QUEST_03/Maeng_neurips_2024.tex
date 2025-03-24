@@ -1,0 +1,276 @@
+\documentclass{article}
+
+\usepackage{graphicx}
+\usepackage[numbers]{natbib}
+\bibliographystyle{unsrt}  % 또는 plain, ieeetr 등 숫자 스타일
+
+% if you need to pass options to natbib, use, e.g.:
+%     \PassOptionsToPackage{numbers, compress}{natbib}
+% before loading neurips_2024
+
+
+% ready for submission
+
+
+% to compile a preprint version, e.g., for submission to arXiv, add add the
+% [preprint] option:
+%     \usepackage[preprint]{neurips_2024}
+
+
+% to compile a camera-ready version, add the [final] option, e.g.:
+%     \usepackage[final]{neurips_2024}
+
+
+% to avoid loading the natbib package, add option nonatbib:
+%    \usepackage[nonatbib]{neurips_2024}
+
+
+\usepackage[utf8]{inputenc} % allow utf-8 input
+\usepackage[T1]{fontenc}    % use 8-bit T1 fonts
+\usepackage{hyperref}       % hyperlinks
+\usepackage{url}            % simple URL typesetting
+\usepackage{booktabs}       % professional-quality tables
+\usepackage{amsfonts}       % blackboard math symbols
+\usepackage{nicefrac}       % compact symbols for 1/2, etc.
+\usepackage{microtype}      % microtypography
+\usepackage{xcolor}         % colors
+
+
+\title{On the Analysis of Training Curves and Optimal Weight Selection in U-Net}
+
+
+% The \author macro works with any number of authors. There are two commands
+% used to separate the names and addresses of multiple authors: \And and \AND.
+%
+% Using \And between authors leaves it to LaTeX to determine where to break the
+% lines. Using \AND forces a line break at that point. So, if LaTeX puts 3 of 4
+% authors names on the first line, and the last on the second line, try using
+% \AND instead of \And before the third author name.
+
+
+\author{%
+  Sungchan Maeng \\
+  \texttt{aodtjdcks@naver.com} \\
+}
+  % examples of more authors
+  % \And
+  % Coauthor \\
+  % Affiliation \\
+  % Address \\
+  % \texttt{email} \\
+  % \AND
+  % Coauthor \\
+  % Affiliation \\
+  % Address \\
+  % \texttt{email} \\
+  % \And
+  % Coauthor \\
+  % Affiliation \\
+  % Address \\
+  % \texttt{email} \\
+  % \And
+  % Coauthor \\
+  % Affiliation \\
+  % Address \\
+  % \texttt{email} \\
+
+
+\begin{document}
+
+
+\maketitle
+
+
+\begin{abstract}
+  In general, deep learning models are trained and optimized by monitoring overfitting and selecting the model weights from an appropriate epoch. However, it is often unclear which epoch yields the most optimal weights in terms of generalization performance. This ambiguity arises from various factors such as irregular training curves, difficulty in identifying trends, and overfitting to the validation set.
+  
+  To address these issues, we propose a method for better identifying optimal model weights. When the training and validation curves are highly unstable, we apply smoothing using moving averages to the loss and metric graphs. Based on the smoothed curves, we select four candidate epochs and evaluate their performance through both quantitative (Mean IoU) and qualitative (visual comparison) assessments on the test set.
+  
+  Through these evaluations, we identify the most generalizable model among the selected checkpoints. The results demonstrate that certain weight selections, particularly those based on validation loss minima, can serve as a practical reference for model selection. Detailed results are discussed in the "Results" section.
+\end{abstract}
+
+
+\section{Introduction}
+
+
+The advancement of deep learning technologies has led to significant performance improvements across various domains, particularly in image segmentation tasks where the U-Net model has been widely adopted. Originally proposed in 2015 for biomedical image segmentation, U-Net has become a standard architecture based on its encoder-decoder structure and skip connections. It is known for delivering high performance even with relatively small datasets, and numerous variants have since been developed.
+
+However, one persistent challenge in training deep learning models—including U-Net—is the question of how to define and select the optimal model weights. Typically, a model is evaluated based on validation loss or a chosen metric, and weights are selected from the epoch just before overfitting begins. Yet in practice, training curves for loss and metrics often exhibit high variance or instability, making it difficult to determine which checkpoint yields the best generalization performance on the test set.
+
+This issue arises not only from training instability but also from various factors such as the composition of the validation set, ambiguity in evaluation criteria, and inherent model uncertainty. In particular, overfitting to the validation set can lead to performance degradation on unseen data, raising the fundamental question: “Does strong validation performance guarantee good generalization?”
+
+Motivated by these concerns, this study explores a more reliable approach to analyzing training curves from a U-Net model and identifying the optimal weight selection point. To mitigate the irregularity of the training graphs, we apply a smoothing technique using moving averages. Based on the smoothed curves, we select specific epoch points and evaluate their performance through both quantitative and qualitative methods. This process aims to determine the model checkpoint that achieves the best generalization, ultimately providing a practical reference for weight selection in real-world applications.
+
+\section{Method}
+\label{gen_inst}
+
+
+In this study, we perform binary semantic segmentation of road areas using a deep learning model based on U-Net. The main focus of the experiment is to analyze training curves after model training and identify the model checkpoint that achieves the best generalization performance. To this end, we describe the process in stages: dataset composition, preprocessing and augmentation, model architecture and training setup, and the analysis of training curves with selected evaluation points.
+
+
+\subsection{Dataset Composition and Preprocessing}
+
+
+We utilized the {KITTI segmentation dataset} for this study. Out of a total of 200 images, 168 were used as the {training set}, 16 as the {validation set}, and the remaining 16 as the {test set}. The segmentation task was formulated as binary classification, focusing solely on the road class labeled as 7.
+
+All images were resized to {224~$\times$~224 pixels}, and {data augmentation} was applied only to the training set using the \texttt{albumentations} library. The augmentation techniques included:
+
+\begin{itemize}
+    \item \texttt{HorizontalFlip(p=0.5)}: 50\% probability of horizontal flipping
+    \item \texttt{RandomSizedCrop(p=0.5)}: 50\% probability of random cropping
+\end{itemize}
+
+No augmentation was applied to the validation or test sets.
+
+
+\subsection{Model Architecture and Training Setup}
+
+The model follows the U-Net architecture, where the input is in the format of \texttt{(batch\_size, 224, 224, 3)} representing RGB images, and the output is \texttt{(batch\_size, 224, 224, 1)}, predicting a binary mask. The final output layer is a $1 \times 1$ convolution followed by a sigmoid activation function to predict per-pixel probabilities of road regions.
+
+The training setup is as follows:
+
+\begin{itemize}
+    \item \textbf{Optimizer}: Adam
+    \item \textbf{Learning Rate}: 1e-4
+    \item \textbf{Loss Function}: Binary Cross Entropy
+    \item \textbf{Evaluation Metric}: Intersection over Union (IoU)
+    \item \textbf{Batch Size}: 8
+    \item \textbf{Epochs}: 400
+\end{itemize}
+
+\subsection{Training Curve Analysis and Checkpoint Selection}
+
+The training loss and metric curves showed significant fluctuations and instability, making it difficult to determine an optimal checkpoint based solely on raw values. To enable a more stable interpretation of the curves, we applied the \textbf{Moving Average} technique. The analysis was conducted with the following configurations:
+
+\begin{itemize}
+    \item \textbf{Short-Term Smoothing}: Moving average with window size $n = 10$, to detect local fluctuations
+    \item \textbf{Long-Term Smoothing}: Moving average with window size $n = 30$, to capture overall trends
+\end{itemize}
+
+Based on this analysis, we selected a total of five candidate epochs:
+
+\begin{enumerate}
+    \item \textbf{Epoch 80}: The point where train loss and validation loss begin to diverge, based on 10-point moving average (see Figure~\ref{fig:ma10_curves})
+    \item \textbf{Epoch 320}: The minimum value of raw validation loss (see Figure~\ref{fig:raw_extremes})
+    \item \textbf{Epoch 390}: The maximum value of raw validation IoU (see Figure~\ref{fig:raw_extremes})
+    \item \textbf{Epoch 350}: The lowest point of validation loss based on 30-point moving average (see Figure~\ref{fig:ma30_curves})
+    \item \textbf{Epoch 200}: A midpoint between Epoch 80 and 320, selected as a comparative baseline
+\end{enumerate}
+
+\begin{figure}[t]
+  \centering
+  \includegraphics[width=0.7\linewidth]{image.png} \\[1ex] % 위쪽 이미지
+  \includegraphics[width=0.7\linewidth]{image (1).png}         % 아래쪽 이미지
+  \caption{Training and validation loss (top) and IoU (bottom) over 400 epochs.}
+  \label{fig:training_curves}
+\end{figure}
+
+\begin{figure}[t]
+  \centering
+  \includegraphics[width=0.7\linewidth]{image (2).png}
+  \caption{Training and validation curves smoothed with a moving average window of $n=10$. Epoch 97 shows the minimum validation loss and maximum validation IoU in this setting.}
+  \label{fig:ma10_curves}
+\end{figure}
+
+\begin{figure}[t]
+  \centering
+  \includegraphics[width=0.7\linewidth]{image (3).png}
+  \caption{Raw curves without smoothing ($n=1$). Epoch 320 and 391 were selected as the points with minimum validation loss and maximum IoU, respectively.}
+  \label{fig:raw_extremes}
+\end{figure}
+
+\begin{figure}[t]
+  \centering
+  \includegraphics[width=0.7\linewidth]{image (4).png}
+  \caption{Curves smoothed with a larger moving average window of $n=30$. Epoch 348 and 388 show the extreme values for validation loss and IoU in this configuration.}
+  \label{fig:ma30_curves}
+\end{figure}
+
+These points were not chosen merely based on local minima or maxima but were strategically selected by considering the \textit{patterns and trends} in the training curves. For each selected epoch, the corresponding model weights were evaluated on the test set using both quantitative and qualitative methods, aiming to identify the checkpoint with the best generalization performance.
+
+
+\section{Result}
+
+In this section, we present the quantitative and qualitative evaluation results based on the five selected epoch checkpoints using the test set.
+
+\subsection{Quantitative Evaluation}
+
+The following table summarizes the \textbf{Mean IoU} values obtained on the test set for each model checkpoint.
+
+\begin{table}[h]
+\centering
+\caption{Mean IoU of Selected Epoch Checkpoints on Test Set}
+\label{tab:mean_iou}
+\begin{tabular}{|c|l|c|}
+\hline
+\textbf{Epoch} & \textbf{Description} & \textbf{Mean IoU} \\
+\hline
+80   & Train/Val Loss divergence point                  & 0.8001 \\
+200  & Midpoint between Epoch 80 and 320                & 0.8459 \\
+320  & Minimum raw Validation Loss                      & \textbf{0.8743} \\
+350  & Minimum Val Loss with Moving Average (n=30)      & 0.8613 \\
+390  & Maximum raw Validation IoU                       & 0.8656 \\
+\hline
+\end{tabular}
+\end{table}
+
+Among the evaluated checkpoints, the \textbf{Epoch 320} model showed the highest Mean IoU (0.8743) on the test set, indicating the best generalization performance. In contrast, the model at Epoch 80 demonstrated the lowest performance, making it an unsuitable choice for optimal weights. While the models at Epochs 200, 350, and 390 also showed relatively high Mean IoU values, the differences among them were not significant, suggesting the need for \textbf{further qualitative analysis}.
+
+Figure~\ref{fig:samplewise_iou} shows the IoU values for individual test samples across the five selected model checkpoints.
+
+\begin{figure}[t]
+  \centering
+  \includegraphics[width=0.5\linewidth]{image (5).png}
+  \caption{IoU scores for each test sample across five different model checkpoints (Epochs 80, 200, 320, 350, and 390). Notably, the model at Epoch 320 shows consistently strong performance across most samples, while Epoch 80 exhibits more fluctuation.}
+  \label{fig:samplewise_iou}
+\end{figure}
+
+
+Notably, for \textbf{Sample 7}, all models performed poorly; however, the Epoch 320 model still achieved the highest IoU among them. Overall, the Epoch 80 model consistently showed lower performance across all samples, whereas the other models---particularly the one at Epoch 320---exhibited strengths depending on the sample.
+
+\subsection{Qualitative Evaluation}
+
+The qualitative evaluation involved visually comparing the segmentation results predicted by each model at different epochs. The figure below displays a matrix in which each column represents a model (i.e., a specific epoch), and each row corresponds to a selected test sample (see Figure~\ref{fig:qualitative_results}).
+
+Focusing on \textbf{Samples 1, 4, 8, and 13}, the model at Epoch 320 clearly outperformed others in accurately identifying road areas. The predictions were more precise in terms of \textbf{boundary delineation}, \textbf{suppression of non-road regions}, and \textbf{removal of noise}, indicating that the Epoch 320 model provided the most stable and generalizable results.
+
+\begin{figure}[t]
+  \centering
+  \includegraphics[width=0.5\linewidth]{image (6).png}
+  \caption{Qualitative comparison of segmentation results across selected model checkpoints. Each row represents a test sample, and each column corresponds to a model trained at a different epoch (80, 200, 320, 350, and 390). The model at Epoch 320 shows clearer boundary detection and less noise in multiple cases.}
+  \label{fig:qualitative_results}
+\end{figure}
+
+\section{Discussion and Conclusion}
+
+\subsection{Discussion}
+
+In this study, we conducted binary segmentation experiments using the U-Net model, focusing on addressing the instability of training curves by applying a smoothing technique and exploring various perspectives for selecting optimal model weights. Through both quantitative (Mean IoU) and qualitative (visual comparison) evaluations, we found that the model checkpoint at \textbf{Epoch 320}, corresponding to the \textbf{minimum validation loss}, yielded the best generalization performance on the test set.
+
+This result suggests that using the \emph{minimum validation loss} as a criterion may lead to better performance than the more commonly used approaches such as selecting the \emph{highest validation metric} or the \emph{last epoch before overfitting}. The application of a smoothing method to reveal the overall trend of the training process allowed for a clearer interpretation of the curves, and the strategy of selecting five candidate epochs based on this analysis provides a \textbf{more objective and systematic approach} to weight selection.
+
+However, it is important to note that this conclusion was drawn under \textbf{specific conditions}---a particular model (U-Net), dataset (KITTI), and binary classification setting. The same trend may not necessarily hold in different scenarios such as multi-class segmentation, alternative backbone architectures, or larger and more diverse datasets.
+
+Nonetheless, this experiment highlights the importance of a \textbf{multi-faceted evaluation approach} that combines both quantitative metrics and qualitative insights, rather than relying solely on validation performance, when selecting optimal model weights in deep learning.
+
+\subsection{Conclusion}
+
+This study investigated the challenge of \textbf{selecting the optimal model weights} during the training process of a U-Net segmentation model. To address the instability of training and validation curves, we applied a moving average smoothing technique and selected five candidate epochs based on observable trends in the graphs. Each checkpoint was evaluated using both quantitative and qualitative methods. The results demonstrated that the model checkpoint at \textbf{Epoch 320}, corresponding to the lowest validation loss, achieved the best performance on the test set.
+
+These findings can serve as a \textbf{useful reference} for future segmentation experiments or practical applications involving U-Net models. Furthermore, this study lays the groundwork for \textbf{future research} aimed at identifying \textbf{generalizable trends in optimal weight selection} across various architectures and datasets.
+
+
+\section{References}
+
+\begin{thebibliography}{9}
+
+\bibitem{ronneberger2015unet}
+O. Ronneberger, P. Fischer, and T. Brox, 
+\textit{U-Net: Convolutional Networks for Biomedical Image Segmentation}. 
+In \textit{Medical Image Computing and Computer-Assisted Intervention (MICCAI)}, 
+pages 234--241, 2015. Springer. \\
+DOI: \href{https://doi.org/10.1007/978-3-319-24574-4_28}{10.1007/978-3-319-24574-4\_28}
+
+\end{thebibliography}
+
+\end{document}
